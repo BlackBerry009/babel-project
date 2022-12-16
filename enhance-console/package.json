@@ -1,0 +1,24 @@
+{
+  "name": "my-babel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "esno version1.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.20.5",
+    "@babel/generator": "^7.20.5",
+    "@babel/parser": "^7.20.5",
+    "@babel/traverse": "^7.20.5"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.20.5",
+    "@types/babel__core": "^7.1.20",
+    "@types/node": "^18.11.15",
+    "esno": "^0.16.3"
+  }
+}
