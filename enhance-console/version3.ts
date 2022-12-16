@@ -1,7 +1,8 @@
-import traverse from "@babel/traverse";
+import traverse, { NodePath } from "@babel/traverse";
 import generator from "@babel/generator";
 import * as types from "@babel/types";
 import { parse } from "@babel/parser";
+import template from "@babel/template";
 
 const sourceCode = `
 console.log(1);
@@ -29,17 +30,31 @@ const targetNames = ["log", "error", "debug", "info"].map(
   (item) => `console.${item}`
 );
 
+interface customNode extends types.CallExpression {
+  isNew: Boolean
+}
+
 traverse(ast, {
-  CallExpression(path, state) {
-    // generator 将 AST 生成代码，即 console.xxx
-    // 或者通过 path 的 toString 方法直接生成
-    const curName = generator(path.node.callee).code;
-    // const curName = path.get('callee').toString()
+  CallExpression(
+    path: NodePath<customNode>,
+    state
+  ) {
+    if (path.node.isNew) {
+      return;
+    }
+    const curName = path.get("callee").toString();
     if (targetNames.includes(curName)) {
       const { line, column } = path.node.loc.start;
-      path.node.arguments.unshift(
-        types.stringLiteral(`filename: (${line}, ${column})`)
-      );
+      const insertNode = template.expression(
+        `console.log('filename: ${line}, ${column}')`
+      )() as customNode;
+      insertNode.isNew = true;
+      if (path.findParent((p) => p.isJSXElement())) {
+        path.replaceWith(types.arrayExpression([insertNode, path.node]));
+        path.skip()
+      } else {
+        path.insertBefore(insertNode);
+      }
     }
   },
 });
